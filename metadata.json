@@ -1,0 +1,7 @@
+{
+  "name": "SpeechTrack AI",
+  "description": "A smart teleprompter that tracks your reading progress in real-time using speech recognition and analyzes your script using Gemini.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
