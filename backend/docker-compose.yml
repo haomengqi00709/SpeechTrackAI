@@ -1,0 +1,18 @@
+services:
+  backend:
+    build: .
+    volumes:
+      - ./:/app/backend    # Mount code — no rebuild on changes
+    ports:
+      - "8000:8000"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
+    restart: unless-stopped

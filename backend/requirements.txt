@@ -1,0 +1,14 @@
+fastapi
+uvicorn[standard]
+websockets
+torch
+transformers>=4.57.3
+accelerate
+qwen-asr
+qwen-tts
+numpy
+soundfile
+moshi-personaplex @ git+https://github.com/NVIDIA/personaplex.git#subdirectory=moshi
+sphn
+sentencepiece
+pyloudnorm

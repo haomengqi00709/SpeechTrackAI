@@ -1,0 +1,51 @@
+FROM nvidia/cuda:12.4.0-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+# System dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 \
+    python3.11-venv \
+    python3-pip \
+    git \
+    libopus-dev \
+    libsndfile1 \
+    sox \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Make python3.11 the default
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 \
+    && update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+
+# Upgrade pip
+RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# Install PyTorch with CUDA 12.4
+RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+
+# Install core ML dependencies (these rarely change)
+RUN pip install --no-cache-dir \
+    transformers>=4.57.3 \
+    accelerate \
+    numpy \
+    soundfile \
+    sentencepiece \
+    sphn \
+    pyloudnorm \
+    huggingface_hub
+
+# Install Qwen ASR/TTS packages
+RUN pip install --no-cache-dir qwen-asr qwen-tts
+
+# Install moshi from NVIDIA PersonaPlex repo
+RUN pip install --no-cache-dir "moshi @ git+https://github.com/NVIDIA/personaplex.git#subdirectory=moshi"
+
+# Install server dependencies
+RUN pip install --no-cache-dir \
+    fastapi \
+    "uvicorn[standard]" \
+    websockets
+
+WORKDIR /app/backend

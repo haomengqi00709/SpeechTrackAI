@@ -1,0 +1,67 @@
+FROM nvidia/cuda:12.4.0-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+# System dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 \
+    python3.11-venv \
+    python3.11-dev \
+    python3-pip \
+    git \
+    curl \
+    build-essential \
+    pkg-config \
+    cmake \
+    libopus-dev \
+    libsndfile1 \
+    sox \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 \
+    && update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
+
+# Install Rust via rustup (Ubuntu packages are too old for sphn's Cargo.lock v4)
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# --- Heavy deps (cached as Docker layers) ---
+
+# PyTorch with CUDA 12.4
+RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+
+# ML stack (pin transformers to 4.57.6 — qwen-asr needs it)
+RUN pip install --no-cache-dir \
+    transformers==4.57.6 \
+    accelerate \
+    numpy \
+    soundfile \
+    sentencepiece \
+    sphn \
+    pyloudnorm \
+    huggingface_hub
+
+# Qwen ASR/TTS — install with --no-deps to avoid transformers version conflict
+# (qwen-asr wants 4.57.6, qwen-tts wants 4.57.3 — both work fine with 4.57.6)
+RUN pip install --no-cache-dir --no-deps qwen-asr qwen-tts
+
+# Moshi (PersonaPlex)
+RUN pip install --no-cache-dir "moshi-personaplex @ git+https://github.com/NVIDIA/personaplex.git#subdirectory=moshi"
+
+# Server
+RUN pip install --no-cache-dir \
+    fastapi \
+    "uvicorn[standard]" \
+    websockets
+
+# --- App code (changes often, last layer) ---
+WORKDIR /app/backend
+COPY . .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
