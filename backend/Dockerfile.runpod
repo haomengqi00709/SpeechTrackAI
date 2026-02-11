@@ -34,6 +34,10 @@ RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel
 # PyTorch with CUDA 12.4
 RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 
+# Upgrade huggingface_hub first (PyTorch installs an old version)
+# transformers==4.57.6 requires >=0.34.0,<1.0
+RUN pip install --no-cache-dir "huggingface_hub>=0.34.0,<1.0"
+
 # ML stack (pin transformers to 4.57.6 — qwen-asr needs it)
 RUN pip install --no-cache-dir \
     transformers==4.57.6 \
@@ -43,7 +47,7 @@ RUN pip install --no-cache-dir \
     sentencepiece \
     sphn \
     pyloudnorm \
-    huggingface_hub
+    Pillow
 
 # Qwen ASR/TTS — install with --no-deps to avoid transformers version conflict
 # (qwen-asr wants 4.57.6, qwen-tts wants 4.57.3 — both work fine with 4.57.6)
@@ -57,6 +61,10 @@ RUN pip install --no-cache-dir \
     fastapi \
     "uvicorn[standard]" \
     websockets
+
+# Fix versions clobbered by moshi: PyTorch cu124 + huggingface_hub
+RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+RUN pip install --no-cache-dir --upgrade "huggingface_hub>=0.34.0,<1.0"
 
 # --- App code (changes often, last layer) ---
 WORKDIR /app/backend
