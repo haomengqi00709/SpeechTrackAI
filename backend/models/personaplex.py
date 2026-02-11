@@ -44,7 +44,7 @@ class PersonaPlexModel:
 
         try:
             from moshi.models.loaders import get_mimi, get_moshi_lm
-            from moshi.models.lm_gen import LMGen
+            from moshi.models.lm import LMGen
             import sentencepiece as spm
             from huggingface_hub import hf_hub_download
         except ImportError as e:

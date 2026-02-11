@@ -53,6 +53,9 @@ RUN pip install --no-cache-dir \
 # (qwen-asr wants 4.57.6, qwen-tts wants 4.57.3 — both work fine with 4.57.6)
 RUN pip install --no-cache-dir --no-deps qwen-asr qwen-tts
 
+# Missing deps for qwen-asr/qwen-tts (skipped by --no-deps)
+RUN pip install --no-cache-dir nagisa librosa qwen-omni-utils einops
+
 # Moshi (PersonaPlex)
 RUN pip install --no-cache-dir "moshi-personaplex @ git+https://github.com/NVIDIA/personaplex.git#subdirectory=moshi"
 

@@ -21,14 +21,15 @@ class OmniModel:
         """Load Qwen3-Omni model and silero VAD."""
         logger.info(f"Loading Omni model: {OMNI_MODEL_NAME}")
 
-        self.processor = AutoProcessor.from_pretrained(OMNI_MODEL_NAME)
-        self.tokenizer = AutoTokenizer.from_pretrained(OMNI_MODEL_NAME)
+        self.processor = AutoProcessor.from_pretrained(OMNI_MODEL_NAME, trust_remote_code=True)
+        self.tokenizer = AutoTokenizer.from_pretrained(OMNI_MODEL_NAME, trust_remote_code=True)
         dtype = torch.float16 if TORCH_DTYPE == "float16" else torch.bfloat16
         self.model = AutoModelForCausalLM.from_pretrained(
             OMNI_MODEL_NAME,
             torch_dtype=dtype,
             device_map=DEVICE_MAP,
             attn_implementation=ATTN_IMPLEMENTATION,
+            trust_remote_code=True,
         )
         self.model.eval()
 
